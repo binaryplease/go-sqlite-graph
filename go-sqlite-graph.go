@@ -10,12 +10,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
+func main_bak() {
 	path := "./data1.db"
 	os.Remove(path)
 
 	g := NewGraph()
 	fmt.Println(g.Empty())
+
 	for i := 1; i < 10; i++ {
 		n := NewNode(i)
 		err := g.AddNode(n)
@@ -24,6 +25,18 @@ func main() {
 
 	e := NewEdge(0, 0, 1)
 	err := g.AddEdge(e)
+	must(err)
+
+	e = NewEdge(1, 0, 2)
+	err = g.AddEdge(e)
+	must(err)
+
+	e = NewEdge(2, 1, 2)
+	err = g.AddEdge(e)
+	must(err)
+
+	e = NewEdge(3, 2, 3)
+	err = g.AddEdge(e)
 	must(err)
 
 	fmt.Println("Nodes: " + strconv.Itoa(len(g.Nodes)))
@@ -185,7 +198,7 @@ func (g *Graph) DeleteEdge(id int) bool {
 
 //PrintGraphviz generates a graph in the dot language to be visualized using graphviz
 func (g *Graph) PrintGraphviz() error {
-	fmt.Println(" digraph {")
+	fmt.Println("digraph {")
 
 	for _, v := range g.Nodes {
 

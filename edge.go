@@ -8,6 +8,7 @@ type Edge struct {
 
 func NewEdge(id, from, to int) *Edge {
 	e := new(Edge)
+	e.Id = id
 	e.From = from
 	e.To = to
 	return e

@@ -1,14 +1,17 @@
- digraph {
-	0 [label=""];
-	1 [label=""];
-	2 [label=""];
-	3 [label=""];
-	4 [label=""];
-	5 [label=""];
-	6 [label=""];
-	7 [label=""];
-	8 [label=""];
-	9 [label=""];
+digraph {
+	0 [label="ID: 0 DATA: "];
+	1 [label="ID: 1 DATA: "];
+	2 [label="ID: 2 DATA: "];
+	3 [label="ID: 3 DATA: "];
+	4 [label="ID: 4 DATA: "];
+	5 [label="ID: 5 DATA: "];
+	6 [label="ID: 6 DATA: "];
+	7 [label="ID: 7 DATA: "];
+	8 [label="ID: 8 DATA: "];
+	9 [label="ID: 9 DATA: "];
 	0 -> 1;
+	0 -> 2;
+	1 -> 2;
+	2 -> 3;
 }
 
