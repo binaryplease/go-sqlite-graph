@@ -4,12 +4,20 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	path := "./data1.db"
 	g := NewGraph()
+	fmt.Println(g.Empty())
+	for i := 1; i < 10; i++ {
+		n := NewNode(i)
+		g.AddNode(n)
+	}
+	fmt.Println(len(g.Nodes))
+	fmt.Println(g.Empty())
 	g.Save(path)
 }
 
@@ -20,6 +28,7 @@ type Graph struct {
 	Edges []*Edge
 }
 
+//NewGraph creates a new graph containig only the root node
 func NewGraph() *Graph {
 	g := new(Graph)
 
@@ -28,33 +37,57 @@ func NewGraph() *Graph {
 	return g
 }
 
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Save saves the graph to a sqlite database specified by the path
 func (g *Graph) Save(path string) {
-	database, _ := sql.Open("sqlite3", path)
+	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " nodes")
+	database, err := sql.Open("sqlite3", path)
+	must(err)
 
-	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS graph-nodes (id INTEGER, data TEXT)")
+	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS graphnodes (id INTEGER, data TEXT)")
+	must(err)
 	statement.Exec()
 
-	statement, _ = database.Prepare("CREATE TABLE IF NOT EXISTS graph-edges (id INTEGER, from INTEGER, to INTEGER)")
+	statement, err = database.Prepare("CREATE TABLE IF NOT EXISTS graphedges (id INTEGER, nfrom INTEGER, nto INTEGER)")
+	must(err)
 	statement.Exec()
 
-	statementInsertNodes, _ := database.Prepare("INSERT INTO graph-nodes (id, text) VALUES (?, ?)")
-	statementInsertEdges, _ := database.Prepare("INSERT INTO graph-edges (id, from,to ) VALUES (?,?,?)")
+	statementInsertNodes, err := database.Prepare("INSERT INTO graphnodes (id, data) VALUES (?, ?)")
+	must(err)
+	statementInsertEdges, err := database.Prepare("INSERT INTO graphedges (id, nfrom, nto ) VALUES (?, ?, ?)")
+	must(err)
+	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " nodes")
 
 	for k, v := range g.Nodes {
 		statementInsertNodes.Exec(k, v.Text)
+		fmt.Println("Saving Node: " + strconv.Itoa(v.Id) + " " + v.Text)
 		for k2, v2 := range v.Children {
 			statementInsertEdges.Exec(k2, v.Id, v2.Id)
+			fmt.Println("Saving Edge: " + strconv.Itoa(v2.Id) + " " + strconv.Itoa(v2.Id) + " -> " + strconv.Itoa(v2.Id))
 		}
 	}
 
 }
 
+//DeleteGraphFromDB deletes all nodes and edges belonging to a certain graph id in the database
+func DeleteGraphFromDB(id int) bool {
+	//TODO implement
+	return false
+}
+
+//TODO add graph id to database
+
 // Load loads a graph from a sqlite database specified by the path
 func (g *Graph) Load(path string) {
 	g = NewGraph()
-	database, _ := sql.Open("sqlite3", path)
-	rows, _ := database.Query("SELECT id, text FROM graph-nodes")
+	database, err := sql.Open("sqlite3", path)
+	rows, err := database.Query("SELECT id, text FROM graph-nodes")
+	must(err)
 
 	//Load nodes
 	var idNode int
