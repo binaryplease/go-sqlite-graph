@@ -1,4 +1,4 @@
-package main
+package sqlitegraph
 type Node struct {
 	Id       int
 	Children []*Node

@@ -1,4 +1,4 @@
-package main
+package sqlitegraph
 
 type Edge struct {
 	Id int
