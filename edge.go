@@ -6,7 +6,7 @@ type Edge struct {
 	To   int
 }
 
-func NewEdge(from, to int) *Edge {
+func NewEdge(id, from, to int) *Edge {
 	e := new(Edge)
 	e.From = from
 	e.To = to

@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"os"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -10,15 +12,26 @@ import (
 
 func main() {
 	path := "./data1.db"
+	os.Remove(path)
+
 	g := NewGraph()
 	fmt.Println(g.Empty())
 	for i := 1; i < 10; i++ {
 		n := NewNode(i)
-		g.AddNode(n)
+		err := g.AddNode(n)
+		must(err)
 	}
-	fmt.Println(len(g.Nodes))
-	fmt.Println(g.Empty())
-	g.Save(path)
+
+	e := NewEdge(0, 0, 1)
+	err := g.AddEdge(e)
+	must(err)
+
+	fmt.Println("Nodes: " + strconv.Itoa(len(g.Nodes)))
+	fmt.Println("Edges: " + strconv.Itoa(len(g.Edges)))
+
+	err = g.Save(path)
+	must(err)
+
 }
 
 //Graph holds the data of the graph with all it's nodes and edges.
@@ -44,8 +57,7 @@ func must(err error) {
 }
 
 // Save saves the graph to a sqlite database specified by the path
-func (g *Graph) Save(path string) {
-	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " nodes")
+func (g *Graph) Save(path string) error {
 	database, err := sql.Open("sqlite3", path)
 	must(err)
 
@@ -59,31 +71,35 @@ func (g *Graph) Save(path string) {
 
 	statementInsertNodes, err := database.Prepare("INSERT INTO graphnodes (id, data) VALUES (?, ?)")
 	must(err)
+
 	statementInsertEdges, err := database.Prepare("INSERT INTO graphedges (id, nfrom, nto ) VALUES (?, ?, ?)")
 	must(err)
-	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " nodes")
 
-	for k, v := range g.Nodes {
-		statementInsertNodes.Exec(k, v.Text)
+	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " nodes")
+	fmt.Println("Found " + strconv.Itoa(len(g.Edges)) + " edges")
+
+	for _, v := range g.Nodes {
 		fmt.Println("Saving Node: " + strconv.Itoa(v.Id) + " " + v.Text)
-		for k2, v2 := range v.Children {
-			statementInsertEdges.Exec(k2, v.Id, v2.Id)
-			fmt.Println("Saving Edge: " + strconv.Itoa(v2.Id) + " " + strconv.Itoa(v2.Id) + " -> " + strconv.Itoa(v2.Id))
-		}
+		statementInsertNodes.Exec(v.Id, v.Text)
+	}
+	for _, v := range g.Edges {
+		fmt.Println("Saving Edge: " + strconv.Itoa(v.Id) + " " + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To))
+		statementInsertEdges.Exec(v.Id, v.From, v.To)
 	}
 
+	return nil
 }
 
 //DeleteGraphFromDB deletes all nodes and edges belonging to a certain graph id in the database
-func DeleteGraphFromDB(id int) bool {
+func DeleteGraphFromDB(id int) error {
 	//TODO implement
-	return false
+	return nil
 }
 
 //TODO add graph id to database
 
 // Load loads a graph from a sqlite database specified by the path
-func (g *Graph) Load(path string) {
+func (g *Graph) Load(path string) error {
 	g = NewGraph()
 	database, err := sql.Open("sqlite3", path)
 	rows, err := database.Query("SELECT id, text FROM graph-nodes")
@@ -107,11 +123,11 @@ func (g *Graph) Load(path string) {
 
 	for rows.Next() {
 		rows.Scan(&idEdge, &from, &to)
-		e := NewEdge(from, to)
-		e.Id = idEdge
+		e := NewEdge(idEdge, from, to)
 		g.AddEdge(e)
 		fmt.Println(strconv.Itoa(idEdge) + ": " + strconv.Itoa(from) + " -> " + strconv.Itoa(to))
 	}
+	return nil
 }
 
 // Empty returns true if the root node is the only node in the graph, false otherwise
@@ -120,31 +136,31 @@ func (g *Graph) Empty() bool {
 }
 
 // AddNode adds a node to the graph
-func (g *Graph) AddNode(n *Node) bool {
+func (g *Graph) AddNode(n *Node) error {
 
 	//Check if Id already exists in graph
 	for _, v := range g.Nodes {
 		if v.Id == n.Id {
-			return false
+			return errors.New("go-sqlite-graph: node ID " + strconv.Itoa(n.Id) + " already exists in graph")
 		}
 	}
 
 	g.Nodes = append(g.Nodes, n)
-	return true
+	return nil
 }
 
 // AddNode adds a node to the graph
-func (g *Graph) AddEdge(e *Edge) bool {
+func (g *Graph) AddEdge(e *Edge) error {
 
 	//Check if Id already exists in graph
 	for _, v := range g.Edges {
 		if v.Id == e.Id {
-			return false
+			return errors.New("go-sqlite-graph: edge ID " + strconv.Itoa(e.Id) + " already exists in graph")
 		}
 	}
 
 	g.Edges = append(g.Edges, e)
-	return true
+	return nil
 
 }
 
