@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"os"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -31,6 +31,7 @@ func main() {
 
 	err = g.Save(path)
 	must(err)
+	g.PrintGraphviz()
 
 }
 
@@ -46,7 +47,9 @@ func NewGraph() *Graph {
 	g := new(Graph)
 
 	//Root node should always be present and have the id 0
-	g.Root = NewNode(0)
+	r := NewNode(0)
+	g.Root = r
+	g.AddNode(r)
 	return g
 }
 
@@ -89,14 +92,6 @@ func (g *Graph) Save(path string) error {
 
 	return nil
 }
-
-//DeleteGraphFromDB deletes all nodes and edges belonging to a certain graph id in the database
-func DeleteGraphFromDB(id int) error {
-	//TODO implement
-	return nil
-}
-
-//TODO add graph id to database
 
 // Load loads a graph from a sqlite database specified by the path
 func (g *Graph) Load(path string) error {
@@ -186,4 +181,21 @@ func (g *Graph) DeleteEdge(id int) bool {
 		}
 	}
 	return false
+}
+
+//PrintGraphviz generates a graph in the dot language to be visualized using graphviz
+func (g *Graph) PrintGraphviz() error {
+	fmt.Println(" digraph {")
+
+	for _, v := range g.Nodes {
+
+		fmt.Println("	" + strconv.Itoa(v.Id) + " [label=\"ID: " + strconv.Itoa(v.Id) + " DATA: " + v.Text + "\"];")
+	}
+
+	for _, v := range g.Edges {
+		fmt.Println("	" + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To) + ";")
+	}
+	fmt.Println("}")
+
+	return nil
 }
