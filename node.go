@@ -1,17 +1,15 @@
 package sqlitegraph
+
+// Node is the basic data structure of the graph.
 type Node struct {
-	Id       int
+	ID       int
 	Children []*Node
 	Text     string
 }
 
+//NewNode creates a new Node with a given id
 func NewNode(id int) *Node {
 	n := new(Node)
-	n.Id = id
+	n.ID = id
 	return n
 }
-
-// AddChild adds a child to a given node
-func (n *Node) AddChild(child *Node) {
-}
-
