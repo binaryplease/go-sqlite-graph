@@ -196,6 +196,13 @@ func (g *Graph) DeleteEdge(id int) bool {
 	return false
 }
 
+// SubGraph returns a graph containing all nodes necessary to get from the starts to the ends
+// It will return an error, if no way is found
+func (g *Graph) SubGraph(startIDs, endIDs []int) (*Graph, error) {
+	//TODO implement
+	return g, nil
+}
+
 //PrintGraphviz generates a graph in the dot language to be visualized using graphviz
 func (g *Graph) PrintGraphviz() error {
 	fmt.Println("digraph {")
