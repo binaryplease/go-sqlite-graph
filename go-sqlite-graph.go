@@ -79,6 +79,26 @@ func (g *Graph) FindSubgraph(starts, ends []Node) (*Graph, error) {
 	return sub, nil
 }
 
+func (g *Graph) FindEdgesFromTo(IDFrom, IDTo int) []*Edge {
+	var edges []*Edge
+
+	for _, v := range g.Edges {
+		if v.From == IDFrom && v.To == IDTo {
+			edges = append(edges, v)
+		}
+	}
+	return edges
+}
+
+func (g *Graph) FindEdgeByID(ID int) (*Edge, error) {
+	for _, v := range g.Edges {
+		if v.ID == ID {
+			return v, nil
+		}
+	}
+	return nil, errors.New("Node not found")
+}
+
 func (g *Graph) FindNodeByID(ID int) (*Node, error) {
 	for _, v := range g.Nodes {
 		if v.ID == ID {
@@ -109,19 +129,15 @@ func (g *Graph) ChildsOf(n Node) []*Node {
 }
 
 //ParentsOf finds the parents of a node
-func (g *Graph) ParentsOf(n *Node) []*Node {
-	nodes := []*Node{}
+func (g *Graph) ParentsOf(ID int) []int {
+	nodes := []int{}
 
 	for _, v := range g.Edges {
 
 		tmpEdge := *v
 
-		if tmpEdge.To == n.ID {
-			tmpNode, err := g.FindNodeByID(tmpEdge.From)
-			if err != nil {
-				panic(err)
-			}
-			nodes = append(nodes, tmpNode)
+		if tmpEdge.To == ID {
+			nodes = append(nodes, tmpEdge.From)
 		}
 	}
 	return nodes
@@ -251,11 +267,64 @@ func (g *Graph) DeleteEdge(id int) bool {
 	return false
 }
 
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Graph) findWay(startIDs []int, endID int) []int {
+
+	ids := []int{endID}
+	ids = append(ids, startIDs...)
+
+	for _, v := range g.ParentsOf(endID) {
+
+		//If parent is not a startID
+		if !contains(startIDs, v) {
+			// Add parents to list
+			ids = append(ids, v)
+			ids = append(ids, g.findWay(startIDs, v)...)
+		}
+	}
+	return ids
+}
+
 // SubGraph returns a graph containing all nodes necessary to get from the starts to the ends
 // It will return an error, if no way is found
 func (g *Graph) SubGraph(startIDs, endIDs []int) (*Graph, error) {
-	//TODO implement
-	return g, nil
+
+	out := NewGraph()
+
+	//Iterate over end nodes (multiple recipes are possible)
+	for _, e := range endIDs {
+
+		for _, v := range g.findWay(startIDs, e) {
+
+			node, err := g.FindNodeByID(v)
+			if err != nil {
+				panic(err)
+			}
+
+			out.AddNode(node)
+		}
+	}
+
+	for _, n := range out.Nodes {
+		for _, c := range g.ChildsOf(*n) {
+			for e := range g.FindEdgesFromTo(n.ID, c.ID) {
+				edge, err := g.FindEdgeByID(e)
+				if err != nil {
+					panic(err)
+				}
+				g.AddEdge(edge)
+			}
+		}
+	}
+		return out, nil
 }
 
 //PrintGraphviz generates a graph in the dot language to be visualized using graphviz
