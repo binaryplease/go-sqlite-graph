@@ -1,6 +1,7 @@
 package sqlitegraph
 
 import (
+	"reflect"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -58,57 +59,13 @@ func createTestGraph() *Graph {
 		NewEdge(9, 7, 9),
 		NewEdge(10, 9, 10)}
 
-	for n := range nodes { g.AddNode(nodes[n]) }
-	for e := range edges { g.AddEdge(edges[e]) }
+	for n := range nodes {
+		g.AddNode(nodes[n])
+	}
+	for e := range edges {
+		g.AddEdge(edges[e])
+	}
 	return g
-}
-
-func TestGraph_Save(t *testing.T) {
-	g := createTestGraph()
-
-	type args struct {
-		path string
-	}
-	tests := []struct {
-		name    string
-		graph   *Graph
-		args    args
-		wantErr bool
-	}{
-		{"Should succeed", g, args{path: "./testdb.db"}, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := g.Save(tt.args.path); (err != nil) != tt.wantErr {
-				t.Errorf("Graph.Save() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestGraph_Load(t *testing.T) {
-
-	g := createTestGraph()
-
-	type args struct {
-		path string
-	}
-	tests := []struct {
-		name    string
-        g       *Graph
-		args    args
-		wantErr bool
-	}{
-		{"Should succeed", g, args{path: "testload1.db"}, false},
-		{"Should fail", g, args{path: "testload2.db"}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// if err := g.Load(tt.args.path); (err != nil) != tt.wantErr {
-			// 	t.Errorf("Graph.Load() error = %v, wantErr %v", err, tt.wantErr)
-			// }
-		})
-	}
 }
 
 func TestGraph_Empty(t *testing.T) {
@@ -284,6 +241,228 @@ func TestGraph_PrintGraphviz(t *testing.T) {
 			}
 			if err := g.PrintGraphviz(); (err != nil) != tt.wantErr {
 				t.Errorf("Graph.PrintGraphviz() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNewGraph(t *testing.T) {
+	tests := []struct {
+		name string
+		want *Graph
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewGraph(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewGraph() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_FindEdgesFromTo(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		IDFrom int
+		IDTo   int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []*Edge
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			if got := g.FindEdgesFromTo(tt.args.IDFrom, tt.args.IDTo); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.FindEdgesFromTo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_FindEdgeByID(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		ID int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *Edge
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			got, err := g.FindEdgeByID(tt.args.ID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Graph.FindEdgeByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.FindEdgeByID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_FindNodeByID(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		ID int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *Node
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			got, err := g.FindNodeByID(tt.args.ID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Graph.FindNodeByID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.FindNodeByID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_ChildsOf(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		n Node
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []*Node
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			if got := g.ChildsOf(tt.args.n); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.ChildsOf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_ParentsOf(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		ID int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []int
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			if got := g.ParentsOf(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.ParentsOf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_FindSubGraph(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		startIDs []int
+		endIDs   []int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *Graph
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			got, err := g.FindSubGraph(tt.args.startIDs, tt.args.endIDs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Graph.FindSubGraph() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Graph.FindSubGraph() = %v, want %v", got, tt.want)
 			}
 		})
 	}
