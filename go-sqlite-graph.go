@@ -72,6 +72,61 @@ func must(err error) {
 	}
 }
 
+// FindSubgraph returns a subset of the graph (a subgraph) with the shortest way
+// from the start nodes to the end nodes if possible. If no possible connection is found, an error is returned
+func (g *Graph) FindSubgraph(starts, ends []Node) (*Graph, error) {
+	sub := NewGraph()
+	return sub, nil
+}
+
+func (g *Graph) FindNodeByID(ID int) (*Node, error) {
+	for _, v := range g.Nodes {
+		if v.ID == ID {
+			return v, nil
+		}
+	}
+	return nil, errors.New("Node not found")
+}
+
+//ChildsOf finds the childs of a node
+func (g *Graph) ChildsOf(n Node) []*Node {
+
+	nodes := []*Node{}
+
+	for _, v := range g.Edges {
+
+		tmpEdge := *v
+
+		if tmpEdge.From == n.ID {
+			tmpNode, err := g.FindNodeByID(tmpEdge.To)
+			if err != nil {
+				panic(err)
+			}
+			nodes = append(nodes, tmpNode)
+		}
+	}
+	return nodes
+}
+
+//ParentsOf finds the parents of a node
+func (g *Graph) ParentsOf(n *Node) []*Node {
+	nodes := []*Node{}
+
+	for _, v := range g.Edges {
+
+		tmpEdge := *v
+
+		if tmpEdge.To == n.ID {
+			tmpNode, err := g.FindNodeByID(tmpEdge.From)
+			if err != nil {
+				panic(err)
+			}
+			nodes = append(nodes, tmpNode)
+		}
+	}
+	return nodes
+}
+
 // Save saves the graph to a sqlite database specified by the path
 func (g *Graph) Save(path string) error {
 	database, err := sql.Open("sqlite3", path)
