@@ -1,52 +1,11 @@
 package sqlitegraph
 
 import (
-	"database/sql"
 	"errors"
-	"fmt"
-	"os"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3" // Database driver
 )
-
-func mainBak() {
-	path := "./data1.db"
-	os.Remove(path)
-
-	g := NewGraph()
-	fmt.Println(g.Empty())
-
-	for i := 1; i < 10; i++ {
-		n := NewNode(i)
-		err := g.AddNode(n)
-		must(err)
-	}
-
-	e := NewEdge(0, 0, 1)
-	err := g.AddEdge(e)
-	must(err)
-
-	e = NewEdge(1, 0, 2)
-	err = g.AddEdge(e)
-	must(err)
-
-	e = NewEdge(2, 1, 2)
-	err = g.AddEdge(e)
-	must(err)
-
-	e = NewEdge(3, 2, 3)
-	err = g.AddEdge(e)
-	must(err)
-
-	fmt.Println("Nodes: " + strconv.Itoa(len(g.Nodes)))
-	fmt.Println("Edges: " + strconv.Itoa(len(g.Edges)))
-
-	err = g.Save(path)
-	must(err)
-	g.PrintGraphviz()
-
-}
 
 //Graph holds the data of the graph with all it's Nodes and edges.
 type Graph struct {
@@ -66,19 +25,7 @@ func NewGraph() *Graph {
 	return g
 }
 
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-// FindSubgraph returns a subset of the graph (a subgraph) with the shortest way
-// from the start nodes to the end nodes if possible. If no possible connection is found, an error is returned
-func (g *Graph) FindSubgraph(starts, ends []Node) (*Graph, error) {
-	sub := NewGraph()
-	return sub, nil
-}
-
+//FindEdgesFromTo finds an endge in the graph by it's start and end
 func (g *Graph) FindEdgesFromTo(IDFrom, IDTo int) []*Edge {
 	var edges []*Edge
 
@@ -90,6 +37,7 @@ func (g *Graph) FindEdgesFromTo(IDFrom, IDTo int) []*Edge {
 	return edges
 }
 
+//FindEdgeByID finds a Edge in the graph by it's ID
 func (g *Graph) FindEdgeByID(ID int) (*Edge, error) {
 	for _, v := range g.Edges {
 		if v.ID == ID {
@@ -99,6 +47,7 @@ func (g *Graph) FindEdgeByID(ID int) (*Edge, error) {
 	return nil, errors.New("Node not found")
 }
 
+//FindNodeByID finds a node in the graph by it's ID
 func (g *Graph) FindNodeByID(ID int) (*Node, error) {
 	for _, v := range g.Nodes {
 		if v.ID == ID {
@@ -141,72 +90,6 @@ func (g *Graph) ParentsOf(ID int) []int {
 		}
 	}
 	return nodes
-}
-
-// Save saves the graph to a sqlite database specified by the path
-func (g *Graph) Save(path string) error {
-	database, err := sql.Open("sqlite3", path)
-	must(err)
-
-	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS graphNodes (id INTEGER, data TEXT)")
-	must(err)
-	statement.Exec()
-
-	statement, err = database.Prepare("CREATE TABLE IF NOT EXISTS graphedges (id INTEGER, nfrom INTEGER, nto INTEGER)")
-	must(err)
-	statement.Exec()
-
-	statementInsertNodes, err := database.Prepare("INSERT INTO graphNodes (id, data) VALUES (?, ?)")
-	must(err)
-
-	statementInsertEdges, err := database.Prepare("INSERT INTO graphedges (id, nfrom, nto ) VALUES (?, ?, ?)")
-	must(err)
-
-	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " Nodes")
-	fmt.Println("Found " + strconv.Itoa(len(g.Edges)) + " edges")
-
-	for _, v := range g.Nodes {
-		fmt.Println("Saving Node: " + strconv.Itoa(v.ID) + " " + v.Text)
-		statementInsertNodes.Exec(v.ID, v.Text)
-	}
-	for _, v := range g.Edges {
-		fmt.Println("Saving Edge: " + strconv.Itoa(v.ID) + " " + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To))
-		statementInsertEdges.Exec(v.ID, v.From, v.To)
-	}
-
-	return nil
-}
-
-// Load loads a graph from a sqlite database specified by the path
-func (g *Graph) Load(path string) error {
-	g = NewGraph()
-	database, err := sql.Open("sqlite3", path)
-	rows, err := database.Query("SELECT id, text FROM graph-Nodes")
-	must(err)
-
-	//Load Nodes
-	var idNode int
-	var text string
-	for rows.Next() {
-		rows.Scan(&idNode, &text)
-		n := NewNode(idNode)
-		n.Text = text
-		g.AddNode(n)
-		fmt.Println(strconv.Itoa(idNode) + ": " + text)
-	}
-
-	//Load edges
-	var idEdge int
-	var from int
-	var to int
-
-	for rows.Next() {
-		rows.Scan(&idEdge, &from, &to)
-		e := NewEdge(idEdge, from, to)
-		g.AddEdge(e)
-		fmt.Println(strconv.Itoa(idEdge) + ": " + strconv.Itoa(from) + " -> " + strconv.Itoa(to))
-	}
-	return nil
 }
 
 // Empty returns true if the root Node is the only Node in the graph, false otherwise
@@ -267,35 +150,9 @@ func (g *Graph) DeleteEdge(id int) bool {
 	return false
 }
 
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func (g *Graph) findWay(startIDs []int, endID int) []int {
-
-	ids := []int{endID}
-	ids = append(ids, startIDs...)
-
-	for _, v := range g.ParentsOf(endID) {
-
-		//If parent is not a startID
-		if !contains(startIDs, v) {
-			// Add parents to list
-			ids = append(ids, v)
-			ids = append(ids, g.findWay(startIDs, v)...)
-		}
-	}
-	return ids
-}
-
-// SubGraph returns a graph containing all nodes necessary to get from the starts to the ends
-// It will return an error, if no way is found
-func (g *Graph) SubGraph(startIDs, endIDs []int) (*Graph, error) {
+// FindSubGraph returns a subset of the graph (a subgraph) with the shortest way
+// from the start nodes to the end nodes if possible. If no possible connection is found, an error is returned
+func (g *Graph) FindSubGraph(startIDs, endIDs []int) (*Graph, error) {
 
 	out := NewGraph()
 
@@ -324,22 +181,5 @@ func (g *Graph) SubGraph(startIDs, endIDs []int) (*Graph, error) {
 			}
 		}
 	}
-		return out, nil
-}
-
-//PrintGraphviz generates a graph in the dot language to be visualized using graphviz
-func (g *Graph) PrintGraphviz() error {
-	fmt.Println("digraph {")
-
-	for _, v := range g.Nodes {
-
-		fmt.Println("	" + strconv.Itoa(v.ID) + " [label=\"ID: " + strconv.Itoa(v.ID) + " DATA: " + v.Text + "\"];")
-	}
-
-	for _, v := range g.Edges {
-		fmt.Println("	" + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To) + ";")
-	}
-	fmt.Println("}")
-
-	return nil
+	return out, nil
 }
