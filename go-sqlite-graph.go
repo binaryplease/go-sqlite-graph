@@ -127,27 +127,27 @@ func (g *Graph) AddEdge(e *Edge) error {
 }
 
 //DeleteNode deletes an Node from the graph if it is present
-func (g *Graph) DeleteNode(id int) bool {
+func (g *Graph) DeleteNode(id int) error {
 
 	for _, v := range g.Nodes {
 		if v.ID == id {
 			//TODO Delete
-			return true
+			return nil
 		}
 	}
-	return false
+	return errors.New("Could not find Node with ID " + strconv.Itoa(id) +" in graph")
 }
 
 //DeleteEdge deletes an edge from the graph if it is present
-func (g *Graph) DeleteEdge(id int) bool {
+func (g *Graph) DeleteEdge(id int) error {
 
 	for _, v := range g.Edges {
 		if v.ID == id {
 			//TODO Delete
-			return true
+			return nil
 		}
 	}
-	return false
+	return errors.New("Could not find Edge with ID " + strconv.Itoa(id) +" in graph")
 }
 
 // FindSubGraph returns a subset of the graph (a subgraph) with the shortest way

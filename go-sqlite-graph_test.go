@@ -160,7 +160,7 @@ func TestGraph_AddNode(t *testing.T) {
 func TestGraph_AddEdge(t *testing.T) {
 
 	// g1
-	e1 := NewEdge(1,1,2)
+	e1 := NewEdge(1, 1, 2)
 	g1 := NewGraph()
 	g1Result := &Graph{
 		Root:  NewNode(0),
@@ -169,8 +169,8 @@ func TestGraph_AddEdge(t *testing.T) {
 	}
 
 	// g2
-	e2 := NewEdge(1,1,2)
-	e2Pre := NewEdge(1,2,3)
+	e2 := NewEdge(1, 1, 2)
+	e2Pre := NewEdge(1, 2, 3)
 	g2 := NewGraph()
 	g2.AddEdge(e2Pre)
 	g2Result := &Graph{
@@ -180,8 +180,8 @@ func TestGraph_AddEdge(t *testing.T) {
 	}
 
 	// g3
-	e3 := NewEdge(1,1,2)
-	e4 := NewEdge(2,1,2)
+	e3 := NewEdge(1, 1, 2)
+	e4 := NewEdge(2, 1, 2)
 	g3 := NewGraph()
 	g3.AddEdge(e4)
 	g3Result := &Graph{
@@ -211,78 +211,22 @@ func TestGraph_AddEdge(t *testing.T) {
 	}
 }
 
-func TestGraph_DeleteNode(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
-	type args struct {
-		id int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			if got := g.DeleteNode(tt.args.id); got != tt.want {
-				t.Errorf("Graph.DeleteNode() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGraph_DeleteEdge(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
-	type args struct {
-		id int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			if got := g.DeleteEdge(tt.args.id); got != tt.want {
-				t.Errorf("Graph.DeleteEdge() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestNewGraph(t *testing.T) {
+	n1 := NewNode(0)
+	g1 := &Graph{
+		Root:  n1,
+		Nodes: []*Node{n1},
+		Edges: []*Edge{},
+	}
 	tests := []struct {
 		name string
 		want *Graph
 	}{
-		// TODO: Add test cases.
+		{"Create new empty graph", g1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewGraph(); !reflect.DeepEqual(got, tt.want) {
+			if got := NewGraph(); g1.Root.ID != 0 {
 				t.Errorf("NewGraph() = %v, want %v", got, tt.want)
 			}
 		})
@@ -290,32 +234,53 @@ func TestNewGraph(t *testing.T) {
 }
 
 func TestGraph_FindEdgesFromTo(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
+
+	e1 := NewEdge(1, 1, 2)
+	e2 := NewEdge(2, 2, 3)
+	e3 := NewEdge(3, 1, 2)
+
+	g0 := NewGraph()
+	e0Result := []*Edge{}
+
+	g1 := NewGraph()
+	g1.AddEdge(e1)
+	g1.AddEdge(e2)
+
+	e1Result := []*Edge{e1}
+
+	g2 := NewGraph()
+	g2.AddEdge(e1)
+	g2.AddEdge(e2)
+	g2.AddEdge(e3)
+	e2Result := []*Edge{e1, e3}
+
 	type args struct {
 		IDFrom int
 		IDTo   int
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []*Edge
+		name  string
+		graph *Graph
+		args  args
+		want  []*Edge
 	}{
-		// TODO: Add test cases.
+		{"Find no edges", g0, args{1, 2}, e0Result},
+		{"Find one edge", g1, args{1, 2}, e1Result},
+		{"Find two edges", g2, args{1, 2}, e2Result},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
+			g := tt.graph
+			foundEdges := g.FindEdgesFromTo(tt.args.IDFrom, tt.args.IDTo)
+
+			if len(foundEdges) != len(tt.want) {
+				t.Errorf("len(Graph.FindEdgesFromTo()) = %v, want %v", len(foundEdges), len(tt.want))
 			}
-			if got := g.FindEdgesFromTo(tt.args.IDFrom, tt.args.IDTo); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Graph.FindEdgesFromTo() = %v, want %v", got, tt.want)
+
+			for k, v := range foundEdges {
+				if v.ID != tt.want[k].ID {
+					t.Errorf("Graph.FindEdgesFromTo() = %v, want %v", foundEdges, tt.want)
+				}
 			}
 		})
 	}
@@ -490,6 +455,68 @@ func TestGraph_FindSubGraph(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Graph.FindSubGraph() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGraph_DeleteNode(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		id int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			if err := g.DeleteNode(tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("Graph.DeleteNode() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGraph_DeleteEdge(t *testing.T) {
+	type fields struct {
+		Root  *Node
+		Nodes []*Node
+		Edges []*Edge
+	}
+	type args struct {
+		id int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Graph{
+				Root:  tt.fields.Root,
+				Nodes: tt.fields.Nodes,
+				Edges: tt.fields.Edges,
+			}
+			if err := g.DeleteEdge(tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("Graph.DeleteEdge() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
