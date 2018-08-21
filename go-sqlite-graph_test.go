@@ -288,14 +288,13 @@ func TestGraph_FindEdgesFromTo(t *testing.T) {
 
 func TestGraph_FindEdgeByID(t *testing.T) {
 
-
 	g1 := NewGraph()
 	g2 := NewGraph()
 	g3 := NewGraph()
 
-	e1 := NewEdge(1, 1,2)
-	e2 := NewEdge(2,1,2,)
-	e3 := NewEdge(3,1,2)
+	e1 := NewEdge(1, 1, 2)
+	e2 := NewEdge(2, 1, 2)
+	e3 := NewEdge(3, 1, 2)
 
 	g1.AddEdge(e1)
 	g1.AddEdge(e2)
@@ -331,31 +330,45 @@ func TestGraph_FindEdgeByID(t *testing.T) {
 }
 
 func TestGraph_FindNodeByID(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
-	type args struct {
-		ID int
-	}
+
+	g1 := NewGraph()
+	g2 := NewGraph()
+	g3 := NewGraph()
+	g4 := NewGraph()
+	g5 := NewGraph()
+
+	n1 := NewNode(1)
+	n2 := NewNode(2)
+	n3 := NewNode(3)
+
+	g1.AddNode(n1)
+	g1.AddNode(n2)
+	g1.AddNode(n3)
+
+	g2.AddNode(n1)
+	g2.AddNode(n2)
+
+	g5.AddNode(n1)
+	g5.AddNode(n2)
+	g5.AddNode(n3)
+
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		graph   *Graph
+		ID      int
 		want    *Node
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Look for edge that exists", g1, 3, n3, false},
+		{"Look for edge that does not exist", g2, 3, nil, true},
+		{"Search empty graph", g3, 3, nil, true},
+		{"Search for root node in empty graph", g4, 0, g4.Root, false},
+		{"Search for root node in graph with nodes", g5, 0, g5.Root, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			got, err := g.FindNodeByID(tt.args.ID)
+			g := tt.graph
+			got, err := g.FindNodeByID(tt.ID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Graph.FindNodeByID() error = %v, wantErr %v", err, tt.wantErr)
 				return
