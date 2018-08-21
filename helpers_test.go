@@ -32,36 +32,6 @@ func TestGraph_PrintGraphviz(t *testing.T) {
 	}
 }
 
-func Test_checkErr(t *testing.T) {
-	type args struct {
-		err error
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			checkErr(tt.args.err)
-		})
-	}
-}
-
-func Test_mainBak(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		// TODO: Add test cases.
-	}
-	for range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mainBak()
-		})
-	}
-}
-
 func Test_contains(t *testing.T) {
 	type args struct {
 		s []int
@@ -72,7 +42,11 @@ func Test_contains(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{"Array contains element one time", args{[]int{1,2,3,4,5}, 1}, true},
+		{"Array contains element two times", args{[]int{1,2,2,4,5}, 2}, true},
+		{"Array does not contain element", args{[]int{1,3,4,5}, 2}, false},
+		{"Array is empty", args{[]int{}, 2}, false},
+		{"Array has only given element", args{[]int{2}, 2}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,3 +88,4 @@ func TestGraph_findWay(t *testing.T) {
 		})
 	}
 }
+

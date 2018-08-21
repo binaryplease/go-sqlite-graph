@@ -15,7 +15,7 @@ func (g *Graph) PrintGraphviz() error {
 	}
 
 	for _, v := range g.Edges {
-		fmt.Println("	" + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To) + ";")
+		fmt.Println("	" + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To) + "[label=\"" + v.Text + "\"];")
 	}
 
 	fmt.Println("}")

@@ -12,3 +12,4 @@
 *.out
 tags
 data1.db
+testdb.db

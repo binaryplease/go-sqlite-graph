@@ -3,7 +3,6 @@ package sqlitegraph
 // Node is the basic data structure of the graph.
 type Node struct {
 	ID       int
-	Children []*Node
 	Text     string
 }
 

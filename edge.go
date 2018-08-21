@@ -2,9 +2,10 @@ package sqlitegraph
 
 //Edge is the data structure to connect nodes inside the graph.
 type Edge struct {
-	ID int
+	ID   int
 	From int
 	To   int
+	Text string
 }
 
 // NewEdge creates and returns a new edge from a given start and end node id

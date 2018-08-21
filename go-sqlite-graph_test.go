@@ -69,25 +69,29 @@ func createTestGraph() *Graph {
 }
 
 func TestGraph_Empty(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
+	n1:= NewNode(1)
+	n2:= NewNode(2)
+
+	g1 := NewGraph()
+	g2 := NewGraph()
+	g3 := NewGraph()
+
+	g2.AddNode(n1)
+	g3.AddNode(n1)
+	g3.AddNode(n2)
+
 	tests := []struct {
 		name   string
-		fields fields
+		graph *Graph
 		want   bool
 	}{
-		// TODO: Add test cases.
+		{"Empty graph", g1, true},
+		{"One element", g2, false},
+		{"Two elements", g3, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
+			g := tt.graph
 			if got := g.Empty(); got != tt.want {
 				t.Errorf("Graph.Empty() = %v, want %v", got, tt.want)
 			}
@@ -214,33 +218,6 @@ func TestGraph_DeleteEdge(t *testing.T) {
 			}
 			if got := g.DeleteEdge(tt.args.id); got != tt.want {
 				t.Errorf("Graph.DeleteEdge() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGraph_PrintGraphviz(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			if err := g.PrintGraphviz(); (err != nil) != tt.wantErr {
-				t.Errorf("Graph.PrintGraphviz() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
