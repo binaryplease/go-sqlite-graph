@@ -287,31 +287,38 @@ func TestGraph_FindEdgesFromTo(t *testing.T) {
 }
 
 func TestGraph_FindEdgeByID(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
-	}
-	type args struct {
-		ID int
-	}
+
+
+	g1 := NewGraph()
+	g2 := NewGraph()
+	g3 := NewGraph()
+
+	e1 := NewEdge(1, 1,2)
+	e2 := NewEdge(2,1,2,)
+	e3 := NewEdge(3,1,2)
+
+	g1.AddEdge(e1)
+	g1.AddEdge(e2)
+	g1.AddEdge(e3)
+
+	g2.AddEdge(e1)
+	g2.AddEdge(e2)
+
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		graph   *Graph
+		ID      int
 		want    *Edge
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Look for edge that exists", g1, 3, e3, false},
+		{"Look for edge that does not exist", g2, 3, nil, true},
+		{"Search empty graph", g3, 3, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			got, err := g.FindEdgeByID(tt.args.ID)
+			g := tt.graph
+			got, err := g.FindEdgeByID(tt.ID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Graph.FindEdgeByID() error = %v, wantErr %v", err, tt.wantErr)
 				return
