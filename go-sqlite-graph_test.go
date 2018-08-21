@@ -69,8 +69,8 @@ func createTestGraph() *Graph {
 }
 
 func TestGraph_Empty(t *testing.T) {
-	n1:= NewNode(1)
-	n2:= NewNode(2)
+	n1 := NewNode(1)
+	n2 := NewNode(2)
 
 	g1 := NewGraph()
 	g2 := NewGraph()
@@ -81,9 +81,9 @@ func TestGraph_Empty(t *testing.T) {
 	g3.AddNode(n2)
 
 	tests := []struct {
-		name   string
+		name  string
 		graph *Graph
-		want   bool
+		want  bool
 	}{
 		{"Empty graph", g1, true},
 		{"One element", g2, false},
@@ -100,30 +100,57 @@ func TestGraph_Empty(t *testing.T) {
 }
 
 func TestGraph_AddNode(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
+
+	//Empty Graph
+	g1 := NewGraph()
+	n1 := NewNode(1)
+
+	g1Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{n1},
+		Edges: []*Edge{},
 	}
+
+	g2 := NewGraph()
+	n2 := NewNode(1)
+	g2.AddNode(n2)
+
+	g2Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{n2},
+		Edges: []*Edge{},
+	}
+
+	g3 := NewGraph()
+	nPre := NewNode(1)
+	n3 := NewNode(2)
+	g3.AddNode(nPre)
+
+	g3Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{nPre, n3},
+		Edges: []*Edge{},
+	}
+
 	type args struct {
 		n *Node
 	}
+
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		graph   *Graph
+		n *Node
+		want    *Graph
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Add a node to empty graph", g1, n1, g1Result, false},
+		{"Try to add node with same ID", g2, n2, g2Result, true},
+		{"Add a node to graph with one node", g3, n3, g3Result, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			if err := g.AddNode(tt.args.n); (err != nil) != tt.wantErr {
+			g := tt.graph
+			if err := g.AddNode(tt.n); (err != nil) != tt.wantErr {
 				t.Errorf("Graph.AddNode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
