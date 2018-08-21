@@ -139,7 +139,7 @@ func TestGraph_AddNode(t *testing.T) {
 	tests := []struct {
 		name    string
 		graph   *Graph
-		n *Node
+		n       *Node
 		want    *Graph
 		wantErr bool
 	}{
@@ -158,30 +158,53 @@ func TestGraph_AddNode(t *testing.T) {
 }
 
 func TestGraph_AddEdge(t *testing.T) {
-	type fields struct {
-		Root  *Node
-		Nodes []*Node
-		Edges []*Edge
+
+	// g1
+	e1 := NewEdge(1,1,2)
+	g1 := NewGraph()
+	g1Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{},
+		Edges: []*Edge{e1},
 	}
-	type args struct {
-		e *Edge
+
+	// g2
+	e2 := NewEdge(1,1,2)
+	e2Pre := NewEdge(1,2,3)
+	g2 := NewGraph()
+	g2.AddEdge(e2Pre)
+	g2Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{},
+		Edges: []*Edge{e2Pre},
 	}
+
+	// g3
+	e3 := NewEdge(1,1,2)
+	e4 := NewEdge(2,1,2)
+	g3 := NewGraph()
+	g3.AddEdge(e4)
+	g3Result := &Graph{
+		Root:  NewNode(0),
+		Nodes: []*Node{},
+		Edges: []*Edge{e4, e3},
+	}
+
 	tests := []struct {
 		name    string
-		fields  fields
-		args    args
+		graph   *Graph
+		e       *Edge
+		want    *Graph
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Add a edge to empty graph", g1, e1, g1Result, false},
+		{"Try to add edge with same ID", g2, e2, g2Result, true},
+		{"Add a second edge to graph with one edge", g3, e3, g3Result, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := &Graph{
-				Root:  tt.fields.Root,
-				Nodes: tt.fields.Nodes,
-				Edges: tt.fields.Edges,
-			}
-			if err := g.AddEdge(tt.args.e); (err != nil) != tt.wantErr {
+			g := tt.graph
+			if err := g.AddEdge(tt.e); (err != nil) != tt.wantErr {
 				t.Errorf("Graph.AddEdge() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
