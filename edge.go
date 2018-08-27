@@ -16,3 +16,10 @@ func NewEdge(id, from, to int) *Edge {
 	e.To = to
 	return e
 }
+
+func (e *Edge) Equals(e2 *Edge) bool {
+	return (e.ID == e2.ID) &&
+		(e.Text == e2.Text) &&
+		(e.From == e2.From) &&
+		(e.To == e2.To)
+}

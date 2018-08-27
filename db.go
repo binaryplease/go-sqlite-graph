@@ -25,15 +25,12 @@ func (g *Graph) Save(path string) error {
 	statementInsertEdges, err := database.Prepare("INSERT INTO graphedges (id, nfrom, nto ) VALUES (?, ?, ?)")
 	checkErr(err)
 
-	fmt.Println("Found " + strconv.Itoa(len(g.Nodes)) + " Nodes")
-	fmt.Println("Found " + strconv.Itoa(len(g.Edges)) + " edges")
-
 	for _, v := range g.Nodes {
-		fmt.Println("Saving Node: " + strconv.Itoa(v.ID) + " " + v.Text)
+		// fmt.Println("Saving Node: " + strconv.Itoa(v.ID) + " " + v.Text)
 		statementInsertNodes.Exec(v.ID, v.Text)
 	}
 	for _, v := range g.Edges {
-		fmt.Println("Saving Edge: " + strconv.Itoa(v.ID) + " " + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To))
+		// fmt.Println("Saving Edge: " + strconv.Itoa(v.ID) + " " + strconv.Itoa(v.From) + " -> " + strconv.Itoa(v.To))
 		statementInsertEdges.Exec(v.ID, v.From, v.To)
 	}
 

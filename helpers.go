@@ -84,7 +84,7 @@ func (g *Graph) findWay(startIDs []int, endID int) []int {
 	ids := []int{endID}
 	ids = append(ids, startIDs...)
 
-	for _, v := range g.ParentsOf(endID) {
+	for _, v := range g.ParentsOf((endID)) {
 
 		//If parent is not a startID
 		if !contains(startIDs, v) {

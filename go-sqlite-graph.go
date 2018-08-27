@@ -2,6 +2,7 @@ package sqlitegraph
 
 import (
 	"errors"
+	"sort"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3" // Database driver
@@ -12,6 +13,22 @@ type Graph struct {
 	Root  *Node
 	Nodes []*Node
 	Edges []*Edge
+}
+
+func (g Graph) ToString() string {
+	result := "Nodes: ["
+
+	for _, v := range g.Nodes {
+		result = result + "(ID: " + strconv.Itoa(v.ID) + ") "
+	}
+	result = result + "] Edges: ["
+
+	for _, v := range g.Edges {
+		result = result + "(ID: " + strconv.Itoa(v.ID) + ") "
+	}
+
+	result = result + "]"
+	return result
 }
 
 //NewGraph creates a new graph containig only the root Node
@@ -58,35 +75,59 @@ func (g *Graph) FindNodeByID(ID int) (*Node, error) {
 }
 
 //ChildsOf finds the childs of a node
-func (g *Graph) ChildsOf(n Node) []*Node {
+func (g *Graph) ChildsOf(n int) []int {
 
-	nodes := []*Node{}
-
-	for _, v := range g.Edges {
-
-		tmpEdge := *v
-
-		if tmpEdge.From == n.ID {
-			tmpNode, err := g.FindNodeByID(tmpEdge.To)
-			if err != nil {
-				panic(err)
-			}
-			nodes = append(nodes, tmpNode)
-		}
-	}
-	return nodes
-}
-
-//ParentsOf finds the parents of a node
-func (g *Graph) ParentsOf(ID int) []int {
 	nodes := []int{}
 
 	for _, v := range g.Edges {
 
 		tmpEdge := *v
 
-		if tmpEdge.To == ID {
-			nodes = append(nodes, tmpEdge.From)
+		if tmpEdge.From == n {
+			tmpNode := (tmpEdge.To)
+			nodes = append(nodes, tmpNode)
+		}
+	}
+	return nodes
+}
+
+//Check if two graphs are the same
+func (g Graph) Equal(g2 *Graph) bool {
+
+	if len(g.Nodes) != len(g2.Nodes) {
+		return false
+	}
+
+	if len(g.Edges) != len(g2.Edges) {
+		return false
+	}
+
+	//Compare nodes
+	for k, _ := range g.Nodes {
+		if !g.Nodes[k].Equals(g2.Nodes[k]) {
+			return false
+		}
+	}
+
+	//Compare Edges
+	for k, _ := range g.Edges {
+		if !g.Edges[k].Equals(g2.Edges[k]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+//ParentsOf finds the parents of a node
+func (g *Graph) ParentsOf(n int) []int {
+	nodes := []int{}
+
+	for _, v := range g.Edges {
+
+
+		if v.To == n {
+			nodes = append(nodes, v.From)
 		}
 	}
 	return nodes
@@ -100,6 +141,7 @@ func (g *Graph) Empty() bool {
 // AddNode adds a Node to the graph
 func (g *Graph) AddNode(n *Node) error {
 
+	//TODO sort
 	//Check if ID already exists in graph
 	for _, v := range g.Nodes {
 		if v.ID == n.ID {
@@ -108,11 +150,16 @@ func (g *Graph) AddNode(n *Node) error {
 	}
 
 	g.Nodes = append(g.Nodes, n)
+	sort.Slice(g.Nodes, func(i, j int) bool {
+		return g.Nodes[i].ID < g.Nodes[j].ID
+	})
+
 	return nil
 }
 
 // AddEdge adds a Node to the graph
 func (g *Graph) AddEdge(e *Edge) error {
+	//TODO sort
 
 	//Check if ID already exists in graph
 	for _, v := range g.Edges {
@@ -122,6 +169,9 @@ func (g *Graph) AddEdge(e *Edge) error {
 	}
 
 	g.Edges = append(g.Edges, e)
+	sort.Slice(g.Edges, func(i, j int) bool {
+		return g.Edges[i].ID < g.Edges[j].ID
+	})
 	return nil
 
 }
@@ -135,7 +185,7 @@ func (g *Graph) DeleteNode(id int) error {
 			return nil
 		}
 	}
-	return errors.New("Could not find Node with ID " + strconv.Itoa(id) +" in graph")
+	return errors.New("Could not find Node with ID " + strconv.Itoa(id) + " in graph")
 }
 
 //DeleteEdge deletes an edge from the graph if it is present
@@ -147,7 +197,7 @@ func (g *Graph) DeleteEdge(id int) error {
 			return nil
 		}
 	}
-	return errors.New("Could not find Edge with ID " + strconv.Itoa(id) +" in graph")
+	return errors.New("Could not find Edge with ID " + strconv.Itoa(id) + " in graph")
 }
 
 // FindSubGraph returns a subset of the graph (a subgraph) with the shortest way
@@ -158,28 +208,29 @@ func (g *Graph) FindSubGraph(startIDs, endIDs []int) (*Graph, error) {
 
 	//Iterate over end nodes (multiple recipes are possible)
 	for _, e := range endIDs {
+		n, err := g.FindNodeByID(e)
+		checkErr(err)
+		out.AddNode(n)
 
-		for _, v := range g.findWay(startIDs, e) {
+		if contains(startIDs, e) {
+			continue
+		} else {
+			for _,c := range g.ParentsOf(e) {
+				edge  := g.FindEdgesFromTo(c,e)[0]
+				out.AddEdge(edge)
 
-			node, err := g.FindNodeByID(v)
-			if err != nil {
-				panic(err)
-			}
 
-			out.AddNode(node)
-		}
-	}
-
-	for _, n := range out.Nodes {
-		for _, c := range g.ChildsOf(*n) {
-			for e := range g.FindEdgesFromTo(n.ID, c.ID) {
-				edge, err := g.FindEdgeByID(e)
-				if err != nil {
-					panic(err)
+				sub, err := g.FindSubGraph(startIDs, []int{c})
+				checkErr(err)
+				for _,v := range sub.Edges{
+					out.AddEdge(v)
 				}
-				g.AddEdge(edge)
+				for _,v := range sub.Nodes {
+					out.AddNode(v)
+				}
 			}
 		}
 	}
-	return out, nil
+return out, nil
 }
+

@@ -12,3 +12,7 @@ func NewNode(id int) *Node {
 	n.ID = id
 	return n
 }
+
+func (n *Node) Equals(n2 *Node) bool {
+	return (n.ID == n2.ID) && (n.Text == n2.Text)
+}
