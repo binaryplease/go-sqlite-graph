@@ -41,7 +41,8 @@ func (g *Graph) Save(path string) error {
 func (g *Graph) Load(path string) error {
 	g = NewGraph()
 	database, err := sql.Open("sqlite3", path)
-	rows, err := database.Query("SELECT id, text FROM graph-Nodes")
+	checkErr(err)
+	rows, err := database.Query("SELECT id, data FROM graphNodes")
 	checkErr(err)
 
 	//Load Nodes
